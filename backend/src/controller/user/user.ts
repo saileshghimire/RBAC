@@ -12,40 +12,37 @@ import { BadRequestsException } from '../../exceptions/bad-request';
 
 export const login = async (req: Request, res: Response,next:NextFunction) => {
     const { username, password } = req.body;
-      const user = await prisma.user.findUnique({
-        where: { username },
-        // include: { role: true },
-      });
-  
-      if (!user) {
-        // return res.status(404).json({ message: 'User not found' });
-        return next(new NotFoundException("User not Found", ErrorCodes.USER_NOT_FOUND));
-      }
-      else{
-        const isPasswordValid = await bcrypt.compare(password, user.password); 
-      if (!isPasswordValid) {
-        // return res.status(401).json({ message: 'Invalid credentials' });
-        next(new BadRequestsException("Invalid credentials.", ErrorCodes.INCORRECT_PASSWORD))
-      }
-  
+    const user = await prisma.user.findUnique({
+      where: { username },
+    });
 
-      const token = jwt.sign(
-        { userId: user.id },
-        JWT_SECRET as string, 
-        { expiresIn: '1h' } 
-      );
-  
+    if (!user) {
+      return next(new NotFoundException("User not Found", ErrorCodes.USER_NOT_FOUND));
+    }
 
-      res.status(200).json({
-        message: 'SignIn successful',
-        token,
-        user: {
-          id: user.id,
-          username: user.username,
-        //   role: user.rolename.name,
-        },
-      });
-      }
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return next(new BadRequestsException("Invalid credentials.", ErrorCodes.INCORRECT_PASSWORD));
+      // Add return here to stop further execution
+    }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user.id },
+      JWT_SECRET as string,
+      { expiresIn: '1h' }
+    );
+
+    // Send success response
+    return res.status(200).json({
+      message: 'SignIn successful',
+      token,
+      user: {
+        id: user.id,
+        username: user.username,
+      },
+    });
+
 
   };
 
