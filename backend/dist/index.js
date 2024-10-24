@@ -16,12 +16,12 @@ app.use(express_1.default.json());
 app.use((0, cors_1.default)());
 app.use((0, morgan_1.default)('tiny'));
 app.disable('x-powered-by');
-app.use(error_1.errorMiddleware);
 app.use('/api', routes_1.default);
 exports.prisma = new client_1.PrismaClient();
 app.get('/', (req, res) => {
     res.json("Hello ..");
 });
+app.use(error_1.errorMiddleware);
 app.listen(secrets_1.PORT, () => {
     console.log(`Server is running on port http://localhost:${secrets_1.PORT}`);
 });

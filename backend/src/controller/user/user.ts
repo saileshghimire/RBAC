@@ -1,27 +1,31 @@
 
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../..';
 import { JWT_SECRET } from '../../secrets';
+import { NotFoundException } from '../../exceptions/not-found';
+import { ErrorCodes } from '../../exceptions/root';
+import { BadRequestsException } from '../../exceptions/bad-request';
 
-export const login = async (req: Request, res: Response) => {
+
+
+export const login = async (req: Request, res: Response,next:NextFunction) => {
     const { username, password } = req.body;
-  
-    try {
       const user = await prisma.user.findUnique({
         where: { username },
         // include: { role: true },
       });
   
       if (!user) {
-        return res.status(404).json({ message: 'User not found' });
+        // return res.status(404).json({ message: 'User not found' });
+        return next(new NotFoundException("User not Found", ErrorCodes.USER_NOT_FOUND));
       }
-  
-
-      const isPasswordValid = await bcrypt.compare(password, user.password); // Make sure you have a password field
+      else{
+        const isPasswordValid = await bcrypt.compare(password, user.password); 
       if (!isPasswordValid) {
-        return res.status(401).json({ message: 'Invalid credentials' });
+        // return res.status(401).json({ message: 'Invalid credentials' });
+        next(new BadRequestsException("Invalid credentials.", ErrorCodes.INCORRECT_PASSWORD))
       }
   
 
@@ -41,10 +45,8 @@ export const login = async (req: Request, res: Response) => {
         //   role: user.rolename.name,
         },
       });
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: 'Internal server error' });
-    }
+      }
+
   };
 
   

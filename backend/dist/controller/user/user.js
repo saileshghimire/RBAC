@@ -17,19 +17,24 @@ const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const __1 = require("../..");
 const secrets_1 = require("../../secrets");
-const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const not_found_1 = require("../../exceptions/not-found");
+const root_1 = require("../../exceptions/root");
+const bad_request_1 = require("../../exceptions/bad-request");
+const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { username, password } = req.body;
-    try {
-        const user = yield __1.prisma.user.findUnique({
-            where: { username },
-            // include: { role: true },
-        });
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-        const isPasswordValid = yield bcryptjs_1.default.compare(password, user.password); // Make sure you have a password field
+    const user = yield __1.prisma.user.findUnique({
+        where: { username },
+        // include: { role: true },
+    });
+    if (!user) {
+        // return res.status(404).json({ message: 'User not found' });
+        return next(new not_found_1.NotFoundException("User not Found", root_1.ErrorCodes.USER_NOT_FOUND));
+    }
+    else {
+        const isPasswordValid = yield bcryptjs_1.default.compare(password, user.password);
         if (!isPasswordValid) {
-            return res.status(401).json({ message: 'Invalid credentials' });
+            // return res.status(401).json({ message: 'Invalid credentials' });
+            next(new bad_request_1.BadRequestsException("Invalid credentials.", root_1.ErrorCodes.INCORRECT_PASSWORD));
         }
         const token = jsonwebtoken_1.default.sign({ userId: user.id }, secrets_1.JWT_SECRET, { expiresIn: '1h' });
         res.status(200).json({
@@ -41,10 +46,6 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 //   role: user.rolename.name,
             },
         });
-    }
-    catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
     }
 });
 exports.login = login;

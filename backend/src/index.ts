@@ -12,7 +12,6 @@ app.use(express.json());
 app.use(cors());
 app.use(morgan('tiny'));
 app.disable('x-powered-by');
-app.use(errorMiddleware);
 app.use('/api', rootrouter);
 
 export const prisma = new PrismaClient();
@@ -21,6 +20,7 @@ app.get('/', (req: Request,res: Response)=>{
     res.json("Hello ..")
 })
 
+app.use(errorMiddleware);
 
 app.listen(PORT, () => {
       console.log(`Server is running on port http://localhost:${PORT}`);
