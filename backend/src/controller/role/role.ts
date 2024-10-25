@@ -153,3 +153,13 @@ export const deleteRole = async (req: Request, res: Response) => {
     }
 };
 
+export const getItem = async(req:Request, res:Response) => {
+  console.log("getseed item");
+  
+  try {
+    const items = await prisma.item.findMany();
+    res.status(200).json(items);
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching items' });
+  }
+};

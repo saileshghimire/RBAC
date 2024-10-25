@@ -3,6 +3,7 @@ import './App.css'
 import { createBrowserRouter,RouterProvider } from "react-router-dom";
 import { Login } from './components/Login';
 import { Register } from './components/Register';
+import { CreateRole } from './components/role/CreateRole';
 
 
 
@@ -15,6 +16,10 @@ const router = createBrowserRouter([
   {
     path:'/register',
     element:<Register></Register>
+  },
+  {
+    path:'/createrole',
+    element:<CreateRole></CreateRole>
   }
 ])
 

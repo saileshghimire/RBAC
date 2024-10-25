@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteRole = exports.getRolebyID = exports.getAllRoles = exports.updateRole = exports.createRole = void 0;
+exports.getItem = exports.deleteRole = exports.getRolebyID = exports.getAllRoles = exports.updateRole = exports.createRole = void 0;
 const __1 = require("../..");
 const role_1 = require("../../validation/role");
 const not_found_1 = require("../../exceptions/not-found");
@@ -152,3 +152,14 @@ const deleteRole = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.deleteRole = deleteRole;
+const getItem = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("getseed item");
+    try {
+        const items = yield __1.prisma.item.findMany();
+        res.status(200).json(items);
+    }
+    catch (error) {
+        res.status(500).json({ error: 'Error fetching items' });
+    }
+});
+exports.getItem = getItem;

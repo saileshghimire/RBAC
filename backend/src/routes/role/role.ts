@@ -1,10 +1,11 @@
 import { Router } from "express";
-import { createRole,getAllRoles, updateRole,deleteRole, getRolebyID } from "../../controller/role/role";
+import { createRole,getAllRoles, updateRole,deleteRole, getRolebyID, getItem } from "../../controller/role/role";
 import { errorHandler } from "../../validation/error-handler";
 import { authMiddleware } from "../../middleware/auth";
 
 const roleRouter = Router();
 
+roleRouter.get("/seeditem",getItem)
 roleRouter.post("/create",[authMiddleware], errorHandler(createRole));
 roleRouter.get("/",[authMiddleware], errorHandler(getAllRoles));
 roleRouter.get("/:id",[authMiddleware],errorHandler(getRolebyID));
