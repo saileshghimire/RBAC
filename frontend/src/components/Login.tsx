@@ -21,6 +21,7 @@ export const Login = ()=> {
             try {
                 const response = await login(value);
                 const token = response.data.token;
+                
                 localStorage.setItem('token', token);
                 const message = response.data.message;
                 toast.success(message);

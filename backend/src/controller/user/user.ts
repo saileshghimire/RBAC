@@ -26,6 +26,7 @@ export const login = async (req: Request, res: Response,next:NextFunction) => {
       // Add return here to stop further execution
     }
 
+
     // Generate JWT token
     const token = jwt.sign(
       { userId: user.id },
@@ -36,7 +37,7 @@ export const login = async (req: Request, res: Response,next:NextFunction) => {
     // Send success response
     return res.status(200).json({
       message: 'SignIn successful',
-      token,
+      token: `Bearer ${token}`,
       user: {
         id: user.id,
         username: user.username,
@@ -47,22 +48,24 @@ export const login = async (req: Request, res: Response,next:NextFunction) => {
   };
 
   
-  export const register = async (req: Request, res: Response) => {
-      const { username, password,middlename, firstname, lastname, phonenumber,address, dateofbirth, roleName, permissions=[] } = req.body;
+  export const register = async (req: Request, res: Response, next:NextFunction) => {
+      const { username, password,middlename, firstname, lastname, phonenumber,address, dateofbirth, roleId } = req.body;
       
-      const initialPermission = ["read_project", "create_project", "read_task", "create_task"];
-      const permissionList = permissions.length > 0 ? permissions : initialPermission;
     try {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const permissionEntries = permissionList.map((perm: string) => ({
-        permission: perm
-      }));
+      const existingUser = await prisma.user.findFirst({
+        where:{
+          username
+        }
+      });
+      if(existingUser){
+        return next(new BadRequestsException("Username already exist", ErrorCodes.USERNAME_ALREADY_EXISTS))
+      }
 
-      const newRole = await prisma.role.create({
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const newUser = await prisma.user.create({
         data: {
-          name: roleName,
-          users: {
-            create: {
+          
               username,
               password: hashedPassword,
               firstname,
@@ -71,25 +74,38 @@ export const login = async (req: Request, res: Response,next:NextFunction) => {
               address,
               phonenumber,
               dateofbirth: new Date(dateofbirth),
-            }
-          },
-          permissions: {
-            create: permissionEntries
-          }
-        }
+              roleID: +roleId
+            },
+          
       });
   
-      return res.status(201).json({
+      return res.status(200).json({
         message: 'User created successfully',
-        user: {
-        //   id: newRole.users[0].id,
-          username: username,
-          role: roleName,
-          permissions: permissionList
-        },
+        user: newUser
       });
     } catch (error) {
       console.error(error);
       return res.status(500).json({ message: 'Internal server error' });
     }
   };
+
+
+
+  export const logout = async(req:Request, res:Response,next:NextFunction) => {
+    const token  = req.headers['authorization']?.split(' ')[1] as string;
+    try {
+      await prisma.token.create({
+        data:{
+          token
+        }
+      });
+      return res.status(200).json({
+        message:" Successfully Logout"
+      })
+    } catch (error) {
+      return res.status(500).json({
+        message:"Problem in logging out"
+      })
+    }
+
+  }
