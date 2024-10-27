@@ -5,7 +5,7 @@ import { authMiddleware } from "../../middleware/auth";
 
 const roleRouter = Router();
 
-roleRouter.get("/seeditem",getItem)
+roleRouter.get("/seeditem",[authMiddleware],getItem)
 roleRouter.post("/create",[authMiddleware], errorHandler(createRole));
 roleRouter.get("/",[authMiddleware], errorHandler(getAllRoles));
 roleRouter.get("/:id",[authMiddleware],errorHandler(getRolebyID));

@@ -18,21 +18,29 @@ import { ErrorCodes } from "../../exceptions/root";
 
 export const createRole = async(req:Request, res:Response) =>{
     try {
-        // const body = RoleSchema.parse(req.body);
-        const body = req.body
+        const body = RoleSchema.parse(req.body);
 
-        const permissions = body.permissions
+        const permissions = body.permissions as any
         
         const permissionEntries: { permission: string; roleId?: number }[] = [];
-        for(const modelName in permissions){
-          // @ts-ignore
-          const actions = permissions[modelName];
-          actions.forEach((action: string) => {
-            permissionEntries.push({
-              permission: `${action}_${modelName}`,
-            });
-          });
-        }
+        // for(const modelName in permissions){
+        //   // @ts-ignore
+        //   const actions = permissions[modelName];
+        //   actions.forEach((action: string) => {
+        //     permissionEntries.push({
+        //       permission: `${action}_${modelName}`,
+        //     });
+        //   });
+        // }
+        permissions.forEach((permission: string) => {
+          const [action, modelName] = permission.split('_');
+          if (action && modelName) {
+              permissionEntries.push({
+                  permission: `${action}_${modelName}`,
+              });
+          }
+      });
+
         const role = await prisma.role.create({
             data: {
             name: body.role,
@@ -44,7 +52,9 @@ export const createRole = async(req:Request, res:Response) =>{
               permissions:true
             }
         });
-        return res.status(201).json(role);
+        return res.status(201).json({
+          message:"Role created successfully"
+        });
       
         
 
@@ -58,39 +68,40 @@ export const updateRole = async (req: Request, res: Response,next:NextFunction) 
     const { id } = req.params;
 
     try {
-      const body = RoleSchema.parse(req.body);
+      const body = req.body;
            
-      const user = await prisma.user.findFirst({
-        where:{
-          id:body.userId
-        },
-        select:{
-          roleID:true
-        }
-      });
-      if(!user){
-        return next(new NotFoundException("User not Found", ErrorCodes.USER_NOT_FOUND));
-      }
- 
-      const searchRole = await prisma.role.findFirst({
-        where:{
-          name:body.role
-        },
-        select:{
-          id:true
-        }
-      });
+      const permissions = body.permissions as any
+        
+    const permissionEntries = permissions.map((permission: string) => {
+      const [action, modelName] = permission.split('_');
+      return { permission: `${action}_${modelName}`, roleId: +id };
+  });
 
-      if (!searchRole) {
-        return next(new NotFoundException("Role not found", ErrorCodes.ROLE_NOT_FOUND));
-      }
-
-      const updatedRole = await prisma.user.update({
-        where: { id: body.userId },
-        data: {
-          roleID: searchRole.id
-      }
+  // Update the role
+  const updatedRole = await prisma.$transaction(async (prisma) => {
+    // Step 1: Update the role's name
+    const role = await prisma.role.update({
+        where: { id: +id },
+        data: { name: body.role },
     });
+
+    // Step 2: Delete existing permissions for this role
+    await prisma.permissions_category.deleteMany({
+        where: { roleId: +id },
+    });
+
+    // Step 3: Create new permissions
+    await prisma.permissions_category.createMany({
+        data: permissionEntries,
+    });
+
+    // Step 4: Fetch the updated role with permissions
+    return prisma.role.findUnique({
+        where: { id: +id },
+        include: { permissions: true },
+    });
+});
+
   
       res.status(200).json({
         message:"Role Updated successfully",
@@ -104,7 +115,11 @@ export const updateRole = async (req: Request, res: Response,next:NextFunction) 
 
 export const getAllRoles = async (req: Request, res: Response) => {
     try {
-      const roles = await prisma.role.findMany();
+      const roles = await prisma.role.findMany({
+        include:{
+          permissions:true
+        }
+      });
   
       res.status(200).json(roles);
     } catch (error) {

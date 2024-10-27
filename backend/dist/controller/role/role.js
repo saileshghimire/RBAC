@@ -27,19 +27,26 @@ const root_1 = require("../../exceptions/root");
 */
 const createRole = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // const body = RoleSchema.parse(req.body);
-        const body = req.body;
+        const body = role_1.RoleSchema.parse(req.body);
         const permissions = body.permissions;
         const permissionEntries = [];
-        for (const modelName in permissions) {
-            // @ts-ignore
-            const actions = permissions[modelName];
-            actions.forEach((action) => {
+        // for(const modelName in permissions){
+        //   // @ts-ignore
+        //   const actions = permissions[modelName];
+        //   actions.forEach((action: string) => {
+        //     permissionEntries.push({
+        //       permission: `${action}_${modelName}`,
+        //     });
+        //   });
+        // }
+        permissions.forEach((permission) => {
+            const [action, modelName] = permission.split('_');
+            if (action && modelName) {
                 permissionEntries.push({
                     permission: `${action}_${modelName}`,
                 });
-            });
-        }
+            }
+        });
         const role = yield __1.prisma.role.create({
             data: {
                 name: body.role,
@@ -51,7 +58,9 @@ const createRole = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 permissions: true
             }
         });
-        return res.status(201).json(role);
+        return res.status(201).json({
+            message: "Role created successfully"
+        });
     }
     catch (error) {
         console.log(error);
@@ -62,35 +71,33 @@ exports.createRole = createRole;
 const updateRole = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     try {
-        const body = role_1.RoleSchema.parse(req.body);
-        const user = yield __1.prisma.user.findFirst({
-            where: {
-                id: body.userId
-            },
-            select: {
-                roleID: true
-            }
+        const body = req.body;
+        const permissions = body.permissions;
+        const permissionEntries = permissions.map((permission) => {
+            const [action, modelName] = permission.split('_');
+            return { permission: `${action}_${modelName}`, roleId: +id };
         });
-        if (!user) {
-            return next(new not_found_1.NotFoundException("User not Found", root_1.ErrorCodes.USER_NOT_FOUND));
-        }
-        const searchRole = yield __1.prisma.role.findFirst({
-            where: {
-                name: body.role
-            },
-            select: {
-                id: true
-            }
-        });
-        if (!searchRole) {
-            return next(new not_found_1.NotFoundException("Role not found", root_1.ErrorCodes.ROLE_NOT_FOUND));
-        }
-        const updatedRole = yield __1.prisma.user.update({
-            where: { id: body.userId },
-            data: {
-                roleID: searchRole.id
-            }
-        });
+        // Update the role
+        const updatedRole = yield __1.prisma.$transaction((prisma) => __awaiter(void 0, void 0, void 0, function* () {
+            // Step 1: Update the role's name
+            const role = yield prisma.role.update({
+                where: { id: +id },
+                data: { name: body.role },
+            });
+            // Step 2: Delete existing permissions for this role
+            yield prisma.permissions_category.deleteMany({
+                where: { roleId: +id },
+            });
+            // Step 3: Create new permissions
+            yield prisma.permissions_category.createMany({
+                data: permissionEntries,
+            });
+            // Step 4: Fetch the updated role with permissions
+            return prisma.role.findUnique({
+                where: { id: +id },
+                include: { permissions: true },
+            });
+        }));
         res.status(200).json({
             message: "Role Updated successfully",
             user: updatedRole
@@ -104,7 +111,11 @@ const updateRole = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
 exports.updateRole = updateRole;
 const getAllRoles = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const roles = yield __1.prisma.role.findMany();
+        const roles = yield __1.prisma.role.findMany({
+            include: {
+                permissions: true
+            }
+        });
         res.status(200).json(roles);
     }
     catch (error) {

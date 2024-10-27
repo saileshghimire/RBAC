@@ -21,7 +21,7 @@ model Item {
 model Role {
   id Int @id @default(autoincrement())
   name String 
-  permissions permissions_category[]
+  permissions permissions_category[] 
   users    User[]
 }
 
@@ -29,7 +29,7 @@ model permissions_category {
  id Int @id @default(autoincrement())
  roleId Int
  permission String
- role Role @relation(fields: [roleId], references: [id])
+ role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
 }
 
 model User {

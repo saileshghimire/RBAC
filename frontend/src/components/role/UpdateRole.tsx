@@ -1,23 +1,42 @@
 
-
 import { useForm } from "@tanstack/react-form";
-import type { FieldApi } from '@tanstack/react-form'
+import type { FieldApi } from "@tanstack/react-form";
 import { toast } from "sonner";
 import { Toast } from "../../container/Toast";
 import { useEffect, useState } from "react";
-import { createRole, getseeditem } from "../../helper/axios/role";
+import { getRolewithId, getseeditem, updateRole } from "../../helper/axios/role";
 import { FieldInfo } from "../../helper/validation/FieldInfo"; 
+import { useParams } from "react-router-dom";
 
 
 
-
-export const CreateRole = () => {
+export const UpdateRole = () => {
+    const params  = useParams<{id:string}>();
+    
+    const roleId = params.id as string
     const [initialValue, setInitialValue] = useState<
         { id: number; name: string }[]
     >([]);
+    const [roleData, setRoleData] = useState<{ role: string, permissions: string[] }>({
+        role: "",
+        permissions: []
+    });
 
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchRoleData = async () => {
+            try {
+                const response = await getRolewithId(roleId);
+            const transformedPermissions = response.data.role.permissions.map((perm: any) => perm.permission);
+            setRoleData({
+                role: response.data.role.name,
+                permissions: transformedPermissions,
+            });
+            } catch (error) {
+                toast.error("Unable to fetch role data. Please refresh.");
+            }
+        };
+
+        const fetchInitialValues = async () => {
             try {
                 const response = await getseeditem();
                 setInitialValue(response.data);
@@ -25,27 +44,23 @@ export const CreateRole = () => {
                 toast.error("Please refresh");
             }
         };
-        fetchData();
-    }, []);
+
+        fetchRoleData();
+        fetchInitialValues();
+    }, [roleId]);
 
     const form = useForm({
-        defaultValues: {
-            role: "",
-            permissions: [],
-        },
+        defaultValues: roleData,
         onSubmit: async ({ value }) => {
             try {
-                const response = await createRole(value);
-                toast.success(response.data.message);
-                
-            } catch (error:any) {
-                toast.error(error.resposne.data.message)
+                await updateRole(roleId, value);  // Calling updateRole API with new role data
+                toast.success("Role updated successfully");
+            } catch (error) {
+                toast.error("Failed to update role");
             }
-            
-        }
+        },
     });
 
-    // Function to handle the selection of permissions
     const handlePermissionChange = (field: FieldApi<any, any, any, any>, model: string, permission: string) => {
         const permissionKey = `${permission}_${model}`;
         const newPermissions = field.state.value.includes(permissionKey)
@@ -54,23 +69,12 @@ export const CreateRole = () => {
         field.setValue(newPermissions);
     };
 
-    // Function to handle selecting/deselecting all permissions for a model
     const toggleAllPermissions = (field: FieldApi<any, any, any, any>, model: string) => {
-        const modelPermissions = [
-            `create_${model}`,
-            `update_${model}`,
-            `read_${model}`,
-            `delete_${model}`,
-        ];
-
-        const allSelected = modelPermissions.every((perm) =>
-            field.state.value.includes(perm)
-        );
-
+        const modelPermissions = [`create_${model}`, `update_${model}`, `read_${model}`, `delete_${model}`];
+        const allSelected = modelPermissions.every((perm) => field.state.value.includes(perm));
         const newPermissions = allSelected
             ? field.state.value.filter((perm: any) => !modelPermissions.includes(perm))
             : [...field.state.value, ...modelPermissions.filter((perm) => !field.state.value.includes(perm))];
-
         field.setValue(newPermissions);
     };
 
@@ -85,12 +89,10 @@ export const CreateRole = () => {
                 }}
                 className="bg-white shadow-lg rounded-lg p-8 w-full max-w-xl"
             >
-                {/* Title */}
                 <h1 className="text-2xl font-bold mb-6 text-gray-700 text-center">
-                    Create a New Role
+                    Update Role
                 </h1>
 
-                {/* Role Input */}
                 <div className="mb-6">
                     <form.Field
                         name="role"
@@ -106,9 +108,7 @@ export const CreateRole = () => {
                                     id={field.name}
                                     name={field.name}
                                     value={field.state.value}
-                                    onChange={(e) =>
-                                        field.handleChange(e.target.value)
-                                    }
+                                    onChange={(e) => field.handleChange(e.target.value)}
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-indigo-200"
                                     placeholder="Enter Role Name"
                                 />
@@ -118,7 +118,6 @@ export const CreateRole = () => {
                     />
                 </div>
 
-                {/* Permissions for each model */}
                 <form.Field
                     name="permissions"
                     children={(field: FieldApi<any, any, any, any>) => (
@@ -128,52 +127,29 @@ export const CreateRole = () => {
                             </h2>
                             
                             {initialValue.map((model) => (
-                                <div
-                                    key={model.id}
-                                    className="p-4 bg-gray-100 rounded-lg mb-4"
-                                >
+                                <div key={model.id} className="p-4 bg-gray-100 rounded-lg mb-4">
                                     <div className="flex items-center justify-between mb-3">
                                         <button
                                             type="button"
-                                            onClick={() =>
-                                                toggleAllPermissions(
-                                                    field,
-                                                    model.name.toLowerCase()
-                                                )
-                                            }
+                                            onClick={() => toggleAllPermissions(field, model.name.toLowerCase())}
                                             className="text-gray-800 font-bold text-lg"
                                         >
                                             {model.name}
                                         </button>
-
-                                        {/* Buttons for creating, reading, updating, deleting permissions */}
                                         <div className="flex space-x-3">
-                                            {["create", "update", "read", "delete"].map(
-                                                (permission) => (
-                                                    <label
-                                                        key={permission}
-                                                        className="flex items-center space-x-1"
-                                                    >
-                                                        <input
-                                                            type="checkbox"
-                                                            className="form-checkbox text-indigo-500"
-                                                            checked={field.state.value.includes(
-                                                                `${permission}_${model.name.toLowerCase()}`
-                                                            )}
-                                                            onChange={() =>
-                                                                handlePermissionChange(
-                                                                    field,
-                                                                    model.name.toLowerCase(),
-                                                                    permission
-                                                                )
-                                                            }
-                                                        />
-                                                        <span className="capitalize text-gray-600">
-                                                            {permission}
-                                                        </span>
-                                                    </label>
-                                                )
-                                            )}
+                                            {["create", "update", "read", "delete"].map((permission) => (
+                                                <label key={permission} className="flex items-center space-x-1">
+                                                    <input
+                                                        type="checkbox"
+                                                        className="form-checkbox text-indigo-500"
+                                                        checked={field.state.value.includes(`${permission}_${model.name.toLowerCase()}`)}
+                                                        onChange={() => handlePermissionChange(field, model.name.toLowerCase(), permission)}
+                                                    />
+                                                    <span className="capitalize text-gray-600">
+                                                        {permission}
+                                                    </span>
+                                                </label>
+                                            ))}
                                         </div>
                                     </div>
                                 </div>
@@ -182,7 +158,6 @@ export const CreateRole = () => {
                     )}
                 />
 
-                {/* Displaying selected permissions */}
                 <div className="mb-6">
                     <h3 className="text-lg font-semibold mb-3 text-gray-700">
                         Selected Permissions:
@@ -194,16 +169,15 @@ export const CreateRole = () => {
                     </ul>
                 </div>
 
-                {/* Submit Button */}
                 <form.Subscribe 
-                children={() => (
-                    <button
-                        type="submit"
-                        className="w-full py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition duration-300"
-                    >
-                        Submit
-                    </button>
-                )}
+                    children={() => (
+                        <button
+                            type="submit"
+                            className="w-full py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition duration-300"
+                        >
+                            Update Role
+                        </button>
+                    )}
                 />
             </form>
         </div>

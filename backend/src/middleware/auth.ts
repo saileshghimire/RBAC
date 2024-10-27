@@ -9,7 +9,7 @@ import { prisma } from "..";
 
 export const authMiddleware = async (req:Request, res:Response, next:NextFunction) => {
 
-        const token = req.headers['authorization'] as string;
+        const token = req.headers['authorization']?.split(' ')[1] as string;
         
         if(!token){
             next(new UnauthorizedException('Unauthorized.', ErrorCodes.UNAUTHORIZED_ACCESS));
@@ -26,6 +26,6 @@ export const authMiddleware = async (req:Request, res:Response, next:NextFunctio
                 next();
                 
             }else{
-                next(new UnauthorizedException('Unauthorized..', ErrorCodes.UNAUTHORIZED_ACCESS))
+                next(new UnauthorizedException('Invalid token', ErrorCodes.UNAUTHORIZED_ACCESS))
             }
 }

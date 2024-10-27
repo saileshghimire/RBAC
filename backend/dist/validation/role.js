@@ -5,5 +5,5 @@ const zod_1 = require("zod");
 exports.RoleSchema = zod_1.z.object({
     role: zod_1.z.string(),
     permissions: zod_1.z.array(zod_1.z.string()).optional(),
-    userId: zod_1.z.number()
+    // userId: z.number()
 });

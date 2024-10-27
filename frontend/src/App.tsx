@@ -4,6 +4,9 @@ import { createBrowserRouter,RouterProvider } from "react-router-dom";
 import { Login } from './components/Login';
 import { Register } from './components/Register';
 import { CreateRole } from './components/role/CreateRole';
+import { UpdateRole } from './components/role/UpdateRole';
+import RoleList from './components/role/RoleList';
+
 
 
 
@@ -20,6 +23,14 @@ const router = createBrowserRouter([
   {
     path:'/createrole',
     element:<CreateRole></CreateRole>
+  },
+  {
+    path:'/updaterole/:id',
+    element:<UpdateRole></UpdateRole>
+  },
+  {
+    path:'/rolelist',
+    element:<RoleList></RoleList>
   }
 ])
 
