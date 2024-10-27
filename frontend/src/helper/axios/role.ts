@@ -48,5 +48,9 @@ export const roleList = async()=>{
 }
 
 export const deleteRole = async(id:string)=> {
-
+    return await axios.delete(`${BASE_URL}/api/role/delete/${id}`,
+        {
+            headers:getAuthHeader()
+        }
+    )
 }

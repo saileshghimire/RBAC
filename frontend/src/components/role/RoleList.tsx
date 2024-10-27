@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { roleList, deleteRole } from "../../helper/axios/role";
 import { useNavigate } from "react-router-dom";
+import { Toast } from "../../container/Toast";
 
 const RoleList = () => {
     const [roles, setRoles] = useState<{ id: string; name: string }[]>([]);
@@ -40,6 +41,7 @@ const RoleList = () => {
 
     return (
         <div className="container mx-auto px-10 py-12 max-w-6xl min-h-[600px]">
+            <Toast />
             <div className="overflow-x-auto">
                 <h1 className="text-4xl font-bold mb-8 text-center text-blue-600">Roles</h1>
                 <table className="min-w-[600px] bg-white shadow-lg rounded-lg overflow-hidden border">
