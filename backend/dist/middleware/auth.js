@@ -21,9 +21,8 @@ const __1 = require("..");
 const authMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const token = (_a = req.headers['authorization']) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
-    console.log(token);
     if (!token) {
-        next(new unauthorized_1.UnauthorizedException('Unauthorized.', root_1.ErrorCodes.UNAUTHORIZED_ACCESS));
+        return next(new unauthorized_1.UnauthorizedException('Unauthorized,No token present ', root_1.ErrorCodes.UNAUTHORIZED_ACCESS));
     }
     const decoded = jsonwebtoken_1.default.verify(token, secrets_1.JWT_SECRET);
     const user = yield __1.prisma.user.findFirst({
@@ -37,7 +36,7 @@ const authMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
         next();
     }
     else {
-        next(new unauthorized_1.UnauthorizedException('Invalid token', root_1.ErrorCodes.UNAUTHORIZED_ACCESS));
+        return next(new unauthorized_1.UnauthorizedException('Invalid token', root_1.ErrorCodes.UNAUTHORIZED_ACCESS));
     }
 });
 exports.authMiddleware = authMiddleware;

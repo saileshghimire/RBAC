@@ -10,12 +10,11 @@ import { prisma } from "..";
 export const authMiddleware = async (req:Request, res:Response, next:NextFunction) => {
 
         const token = req.headers['authorization']?.split(' ')[1] as string;
-        console.log(token);
-        
-        
+     
         if(!token){
-            next(new UnauthorizedException('Unauthorized.', ErrorCodes.UNAUTHORIZED_ACCESS));
+            return next(new UnauthorizedException('Unauthorized,No token present ', ErrorCodes.UNAUTHORIZED_ACCESS));
         }
+        
         const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
         
         const user = await prisma.user.findFirst({
@@ -28,6 +27,6 @@ export const authMiddleware = async (req:Request, res:Response, next:NextFunctio
                 next();
                 
             }else{
-                next(new UnauthorizedException('Invalid token', ErrorCodes.UNAUTHORIZED_ACCESS))
+                return next(new UnauthorizedException('Invalid token', ErrorCodes.UNAUTHORIZED_ACCESS))
             }
 }
