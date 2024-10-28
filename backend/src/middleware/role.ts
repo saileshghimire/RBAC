@@ -74,7 +74,6 @@ import { log } from "console";
         permission:permission
       }
     });
-    console.log(Permission);
     
     if(!Permission){
       return next(new UnauthorizedException("Unauthorized Role", ErrorCodes.UNAUTHORIZED_ACCESS));

@@ -67,7 +67,6 @@ const checkPermission = (permission) => {
                 permission: permission
             }
         });
-        console.log(Permission);
         if (!Permission) {
             return next(new unauthorized_1.UnauthorizedException("Unauthorized Role", root_1.ErrorCodes.UNAUTHORIZED_ACCESS));
         }
