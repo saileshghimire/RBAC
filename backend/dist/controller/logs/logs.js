@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getlogs = void 0;
 const pagination_1 = require("../pagination");
+const filter_1 = require("../filter");
 const fs = require('fs');
 const path = require('path');
 // const filepath = path.join(__dirname, '../logs/backend.log')
@@ -21,10 +22,18 @@ const getlogs = (req, res) => {
             return res.status(500).send({ error: 'Failed to load logs' });
         }
         // Process logs and send response
-        const parsedLogs = logs.split('\n').filter(Boolean).map((line) => JSON.parse(line));
+        let parsedLogs = logs.split('\n').filter(Boolean).map((line) => JSON.parse(line));
+        const method = req.query.method || null;
+        const date = req.query.date || null;
+        console.log(method);
+        console.log(date);
+        if (date || method) {
+            console.log("...");
+            parsedLogs = (0, filter_1.logsFilter)(parsedLogs, date, method);
+            console.log(parsedLogs);
+        }
         const currentPage = parseInt(req.query.page) || 1;
-        const pageSize = 5;
-        const paginatedLogs = yield (0, pagination_1.paginate)(parsedLogs, currentPage, pageSize);
+        const paginatedLogs = yield (0, pagination_1.paginate)(parsedLogs, currentPage);
         return res.status(200).json(paginatedLogs);
     }));
 };

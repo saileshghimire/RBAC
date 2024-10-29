@@ -10,7 +10,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.paginate = void 0;
-const paginate = (items, currentPage, pageSize) => __awaiter(void 0, void 0, void 0, function* () {
+const paginate = (items, currentPage) => __awaiter(void 0, void 0, void 0, function* () {
+    const pageSize = 5;
     const totalItems = items.length;
     const totalpages = Math.ceil(totalItems / pageSize);
     const StartIndex = (currentPage - 1) * pageSize;

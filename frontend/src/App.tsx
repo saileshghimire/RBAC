@@ -6,6 +6,7 @@ import { Register } from './components/Register';
 import { CreateRole } from './components/role/CreateRole';
 import { UpdateRole } from './components/role/UpdateRole';
 import RoleList from './components/role/RoleList';
+import { Log } from './components/log/Log';
 
 
 
@@ -31,6 +32,10 @@ const router = createBrowserRouter([
   {
     path:'/rolelist',
     element:<RoleList></RoleList>
+  },
+  {
+    path:'/logs',
+    element:<Log></Log>
   }
 ])
 
