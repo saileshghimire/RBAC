@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { getAuthHeader } from '../../midddleware/auth';
+import { getLogs } from '../../helper/axios/log';
 
 interface Log {
   level: number;
@@ -40,7 +42,7 @@ export const Log = () => {
       if (date) params.date = date;
       console.log(params);
       
-      const response = await axios.get<ApiResponse>('http://localhost:3000/api/logs', { params });
+      const response = await getLogs(params);
       setLogs(response.data);
     } catch (err) {
       setError('Error loading logs.');

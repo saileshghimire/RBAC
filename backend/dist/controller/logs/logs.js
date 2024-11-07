@@ -14,7 +14,6 @@ const pagination_1 = require("../pagination");
 const filter_1 = require("../filter");
 const fs = require('fs');
 const path = require('path');
-// const filepath = path.join(__dirname, '../logs/backend.log')
 const getlogs = (req, res) => {
     fs.readFile(path.join(__dirname, '../../../logs/backend.log'), 'utf-8', (err, logs) => __awaiter(void 0, void 0, void 0, function* () {
         if (err) {
@@ -25,12 +24,8 @@ const getlogs = (req, res) => {
         let parsedLogs = logs.split('\n').filter(Boolean).map((line) => JSON.parse(line));
         const method = req.query.method || null;
         const date = req.query.date || null;
-        console.log(method);
-        console.log(date);
         if (date || method) {
-            console.log("...");
             parsedLogs = (0, filter_1.logsFilter)(parsedLogs, date, method);
-            console.log(parsedLogs);
         }
         const currentPage = parseInt(req.query.page) || 1;
         const paginatedLogs = yield (0, pagination_1.paginate)(parsedLogs, currentPage);

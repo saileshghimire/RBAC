@@ -25,6 +25,7 @@ export const getlogs = (req:Request, res:Response) => {
     }
     const currentPage = parseInt(req.query.page as string) || 1;
     const paginatedLogs = await paginate(parsedLogs,currentPage);
+    
     return res.status(200).json(paginatedLogs);
 });
 };
