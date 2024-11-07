@@ -1,8 +1,6 @@
 
 
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { getAuthHeader } from '../../midddleware/auth';
+import { useState, useEffect } from 'react';
 import { getLogs } from '../../helper/axios/log';
 
 interface Log {

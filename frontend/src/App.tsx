@@ -8,6 +8,7 @@ import { UpdateRole } from './components/role/UpdateRole';
 import RoleList from './components/role/RoleList';
 import { Log } from './components/log/Log';
 import { SocketLog } from './components/log/SocketLog';
+import { Details } from './components/Details';
 
 
 
@@ -41,6 +42,9 @@ const router = createBrowserRouter([
   {
     path:'/socketlog',
     element:<SocketLog></SocketLog>
+  }, {
+    path:'/details',
+    element:<Details></Details>
   }
 ])
 

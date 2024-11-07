@@ -7,11 +7,13 @@ import { passwordValidate } from "../helper/validation/password";
 import { FieldInfo } from "../helper/validation/FieldInfo";
 import { toast } from "sonner";
 import { Toast } from "../container/Toast";
+import { useNavigate } from "react-router-dom";
 
 
 
 
 export const Login = ()=> {
+    const navigate = useNavigate();
     const form = useForm({
         defaultValues:{
             username: '',
@@ -25,6 +27,7 @@ export const Login = ()=> {
                 localStorage.setItem('token', token);
                 const message = response.data.message;
                 toast.success(message);
+                navigate('/details');
 
             } catch (error:any) {
                 toast.error(error.response.data.message);       

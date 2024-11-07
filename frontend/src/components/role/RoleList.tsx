@@ -14,8 +14,8 @@ const RoleList = () => {
             try {
                 const response = await roleList();
                 setRoles(response.data);
-            } catch (error) {
-                toast.error("Failed to fetch roles");
+            } catch (error:any) {
+                toast.error(error.response.data.message);
             }
         };
         fetchRoles();

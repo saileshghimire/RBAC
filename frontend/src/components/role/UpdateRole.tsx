@@ -31,8 +31,8 @@ export const UpdateRole = () => {
                 role: response.data.role.name,
                 permissions: transformedPermissions,
             });
-            } catch (error) {
-                toast.error("Unable to fetch role data. Please refresh.");
+            } catch (error:any) {
+                toast.error(error.response.data.message);
             }
         };
 
@@ -40,8 +40,8 @@ export const UpdateRole = () => {
             try {
                 const response = await getseeditem();
                 setInitialValue(response.data);
-            } catch (error) {
-                toast.error("Please refresh");
+            } catch (error:any) {
+                toast.error(error.response.data.message);
             }
         };
 
