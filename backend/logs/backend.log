@@ -218,3 +218,5 @@
 {"level":30,"time":1730968258262,"pid":125999,"hostname":"sailesh-Inspiron-5593","methods":"GET","url":"/api/role/","statusCode":304,"responseTime":"20ms","username":"sailesh"}
 {"level":30,"time":1730968258266,"pid":125999,"hostname":"sailesh-Inspiron-5593","methods":"GET","url":"/api/role/","username":"sailesh"}
 {"level":30,"time":1730968258296,"pid":125999,"hostname":"sailesh-Inspiron-5593","methods":"GET","url":"/api/role/","statusCode":304,"responseTime":"32ms","username":"sailesh"}
+{"level":30,"time":1731218358237,"pid":55776,"hostname":"sailesh-Inspiron-5593","methods":"POST","url":"/api/user/login","username":"sailesh"}
+{"level":30,"time":1731218358384,"pid":55776,"hostname":"sailesh-Inspiron-5593","methods":"POST","url":"/api/user/login","statusCode":500,"responseTime":"148ms","username":"sailesh"}
